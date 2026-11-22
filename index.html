@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#112331">
+  <meta name="description" content="Asignación aleatoria de tareas de limpieza para el Salón del Reino. Cada tarea se asigna una sola vez.">
+  <title>Asignación de tareas | Salón del Reino</title>
+  <style>
+:root {
+  --bg: #0f1822;
+  --bg-2: #112331;
+  --panel: rgba(255,255,255,.88);
+  --panel-strong: #ffffff;
+  --ink: #13202e;
+  --muted: #617387;
+  --line: rgba(15, 33, 48, .1);
+  --primary: #5b7cb2;
+  --primary-2: #44638f;
+  --soft: #eef4fb;
+  --success: #1f8f66;
+  --danger: #ba4d5a;
+  --shadow: 0 18px 60px rgba(8, 16, 24, .22);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--bg-2), var(--bg));
+  font-synthesis: none;
+  line-height: 1.45;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { position: relative; color: #f5f9ff; overflow-x: hidden; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+strong { font-weight: 700; }
+
+.bg-orb {
+  position: fixed;
+  border-radius: 999px;
+  pointer-events: none;
+  filter: blur(8px);
+  opacity: .35;
+  z-index: -1;
+}
+.orb-a {
+  width: 500px;
+  height: 500px;
+  right: -200px;
+  top: 50px;
+  background: radial-gradient(circle, rgba(91,124,178,.65), transparent 65%);
+}
+.orb-b {
+  width: 600px;
+  height: 600px;
+  left: -240px;
+  top: 280px;
+  background: radial-gradient(circle, rgba(195,214,238,.23), transparent 65%);
+}
+
+.page {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+}
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: #dce8fb;
+}
+.brand-mark svg { width: 44px; height: 44px; }
+.brand strong {
+  display: block;
+  font-size: 1.15rem;
+  letter-spacing: -.02em;
+}
+.brand span {
+  display: block;
+  font-size: .86rem;
+  color: #c7d6eb;
+}
+
+.ghost-button,
+.primary-button,
+.secondary-button,
+.logout-button,
+.close-button {
+  border: 0;
+  border-radius: 14px;
+}
+
+.ghost-button {
+  background: rgba(255,255,255,.08);
+  color: #f1f7ff;
+  padding: 12px 16px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,.14);
+}
+.ghost-button:hover { background: rgba(255,255,255,.12); }
+.ghost-button svg { width: 18px; height: 18px; }
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 26px;
+  align-items: stretch;
+  padding: 14px 0 24px;
+}
+
+.hero-copy {
+  padding: 34px 0 8px;
+}
+.eyebrow {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: #caddf3;
+  letter-spacing: .16em;
+  font-size: .74rem;
+  font-weight: 800;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #9fc0ec;
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(159,192,236,.85);
+}
+.hero h1 {
+  margin: 16px 0 14px;
+  font-size: clamp(2.35rem, 5vw, 4.45rem);
+  line-height: 1.02;
+  letter-spacing: -.05em;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(120deg, #ffffff, #c7daf1 45%, #94b5e5 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p {
+  margin: 0;
+  max-width: 720px;
+  color: #d8e5f7;
+  font-size: 1.04rem;
+}
+
+.status-card,
+.card,
+.admin-panel {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+.status-card {
+  border-radius: 28px;
+  padding: 24px;
+  align-self: stretch;
+}
+.status-head,
+.card-topline,
+.tools-row,
+.tools-row-spaced,
+.status-row,
+.admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.status-head span:first-child,
+.section-label,
+.admin-eyebrow {
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  color: #6f8298;
+}
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c5cfdb;
+}
+.status-indicator.online { background: var(--success); box-shadow: 0 0 0 5px rgba(31,143,102,.12); }
+.status-indicator.offline { background: var(--danger); box-shadow: 0 0 0 5px rgba(186,77,90,.12); }
+.status-main { padding: 14px 0 8px; }
+.big-number {
+  font-size: clamp(2.8rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+.status-label, .session-text, .helper, .task-description, .result-message, .admin-description, .empty-admin, .footer {
+  color: var(--muted);
+}
+.progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #dfe8f5;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress > div {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #88a9d6);
+  border-radius: inherit;
+  transition: width .28s ease;
+}
+.status-row {
+  margin-top: 10px;
+  font-size: .92rem;
+  color: var(--muted);
+}
+.status-divider,
+.admin-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0;
+}
+.status-session { display: flex; gap: 12px; align-items: flex-start; }
+.session-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--soft);
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+  font-weight: 800;
+}
+.session-title { font-weight: 700; }
+
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(290px, .8fr);
+  gap: 26px;
+  align-items: start;
+}
+.card {
+  border-radius: 30px;
+  padding: 28px;
+}
+.tiny-stars { color: #91a8cb; }
+
+.intro-illustration {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 20px;
+}
+.intro-illustration svg {
+  width: min(100%, 280px);
+  height: auto;
+}
+
+.field-label {
+  display: block;
+  font-size: .95rem;
+  font-weight: 700;
+  color: #29415a;
+  margin-bottom: 9px;
+}
+input, textarea {
+  width: 100%;
+  border: 1px solid #d7e0ea;
+  border-radius: 16px;
+  background: #fcfdff;
+  color: var(--ink);
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+input:focus, textarea:focus {
+  border-color: #8aa8d1;
+  box-shadow: 0 0 0 4px rgba(91,124,178,.12);
+}
+textarea { resize: vertical; min-height: 210px; }
+.helper { margin: 10px 0 0; font-size: .9rem; }
+.helper.small { margin-top: 4px; font-size: .84rem; }
+
+.primary-button,
+.secondary-button,
+.logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  font-weight: 700;
+  padding: 0 18px;
+}
+.primary-button {
+  margin-top: 18px;
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+}
+.primary-button:hover { filter: brightness(1.03); }
+.secondary-button {
+  background: #edf3fb;
+  color: var(--ink);
+}
+.secondary-button.accent { color: var(--primary-2); }
+.secondary-button.danger { color: var(--danger); background: #fdecee; }
+.logout-button {
+  width: 100%;
+  margin-top: 18px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid #d6e0ec;
+}
+.notice,
+.admin-notice {
+  min-height: 22px;
+  margin-top: 14px;
+  font-size: .92rem;
+  color: var(--danger);
+}
+.admin-notice.success { color: var(--success); }
+
+.result-stage {
+  text-align: center;
+}
+.result-badge {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ebf3ff;
+  color: var(--primary-2);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.task-visual {
+  margin: 22px auto 8px;
+  width: min(100%, 280px);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #f8fbff, #eef4fb);
+  padding: 18px;
+  min-height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.task-visual svg { width: 100%; height: auto; display: block; }
+.result-stage h2 {
+  margin: 10px 0 10px;
+  font-size: clamp(1.55rem, 4vw, 2.2rem);
+  line-height: 1.08;
+  letter-spacing: -.03em;
+}
+.task-description {
+  margin: 0 auto 12px;
+  max-width: 34ch;
+  font-size: 1rem;
+}
+.result-message {
+  margin: 0 auto;
+  max-width: 42ch;
+  font-size: .98rem;
+}
+.result-tag {
+  margin: 18px auto 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #eef6f1;
+  color: #25614b;
+  font-size: .9rem;
+}
+.result-tag span {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2d8b66;
+  color: #fff;
+  font-size: .8rem;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 18px;
+  background: #f4f8fd;
+  padding: 14px;
+}
+.step-item b {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #dce8f8;
+  color: var(--primary-2);
+}
+.mini-note {
+  margin-top: 22px;
+  border-radius: 18px;
+  background: #fbfdff;
+  border: 1px solid #e0e9f4;
+  padding: 16px;
+  color: var(--muted);
+}
+.mini-note strong { color: var(--ink); }
+.footer {
+  text-align: center;
+  padding: 20px 0 8px;
+  font-size: .92rem;
+  color: #b6c7db;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 15, 22, .62);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 10;
+}
+.admin-panel {
+  width: min(760px, 100%);
+  max-height: min(92vh, 920px);
+  overflow: auto;
+  border-radius: 28px;
+  padding: 26px;
+}
+.admin-head { align-items: flex-start; }
+.admin-head h2 { margin: 6px 0 0; font-size: 1.7rem; }
+.close-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f1f5fa;
+  color: #506375;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.assignments-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.assignment-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 16px;
+  background: #f8fbff;
+  border: 1px solid #e1e8f1;
+  padding: 12px 14px;
+}
+.assignment-row span:last-child {
+  color: var(--primary-2);
+  font-weight: 600;
+  text-align: right;
+}
+
+[hidden] { display: none !important; }
+
+@media (max-width: 900px) {
+  .hero, .main-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-copy { padding-top: 10px; }
+}
+
+@media (max-width: 640px) {
+  .page { width: min(100% - 20px, 1120px); }
+  .topbar {
+    padding: 18px 0;
+    flex-wrap: wrap;
+  }
+  .ghost-button { width: 100%; justify-content: center; }
+  .status-card, .card, .admin-panel { border-radius: 24px; }
+  .card, .status-card, .admin-panel { padding: 20px; }
+  .hero h1 { font-size: 2.5rem; }
+  .tools-row,
+  .tools-row-spaced,
+  .assignment-row,
+  .admin-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .assignment-row span:last-child { text-align: left; }
+}
+
+/* Botón principal grande y sin campos de identificación */
+.draw-big-button {
+  min-height: 96px;
+  font-size: clamp(1.15rem, 3vw, 1.5rem);
+  letter-spacing: -.02em;
+  border-radius: 22px;
+  box-shadow: 0 12px 24px rgba(68,99,143,.2);
+}
+.draw-big-button svg { width: 27px; height: 27px; }
+.draw-big-button:disabled { opacity: .58; box-shadow: none; }
+.draw-big-button:focus-visible { outline: 4px solid #96b3dc; outline-offset: 4px; }
+.draw-hint { text-align: center; margin-top: 14px; }
+
+/* Navegación entre participantes en un único dispositivo */
+.next-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  min-height: 54px;
+  margin-top: 24px;
+  font: inherit;
+  font-weight: 750;
+  color: #fff;
+  background: linear-gradient(135deg, #5b7cb2, #44638f);
+  cursor: pointer;
+}
+.next-button:hover { filter: brightness(1.05); }
+.next-button:focus-visible { outline: 3px solid #9bb8df; outline-offset: 3px; }
+
+</style>
+  
+</head>
+<body>
+  <div class="bg-orb orb-a" aria-hidden="true"></div>
+  <div class="bg-orb orb-b" aria-hidden="true"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="brand" aria-label="Asignación de tareas">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <rect x="4" y="4" width="40" height="40" rx="14" fill="currentColor" opacity=".14"></rect>
+            <path d="M16 24.5l5 5 11-12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <div>
+          <strong>Asignación</strong>
+          <span>Salón del Reino</span>
+        </div>
+      </div>
+
+      <button id="openAdmin" class="ghost-button" type="button" aria-label="Abrir panel de gestión">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        Gestión
+      </button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="dot"></span>EXTRACCIÓN EN ESTE DISPOSITIVO</div>
+          <h1>Tareas de limpieza<br><em>asignadas al azar</em></h1>
+          <p>
+            Pulsa el botón y descubre tu tarea. Después, pasa el teléfono a la siguiente persona. Cada tarea sale una sola vez.
+          </p>
+        </div>
+
+        <aside class="status-card">
+          <div class="status-head">
+            <span>ESTADO</span>
+            <span class="status-indicator" id="connectionStatus" title="Guardado local"></span>
+          </div>
+          <div class="status-main">
+            <div class="big-number" id="remainingCount">—</div>
+            <div class="status-label">tareas disponibles</div>
+          </div>
+          <div class="progress" id="progressBar" role="progressbar" aria-label="Porcentaje de tareas asignadas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="progressFill"></div>
+          </div>
+          <div class="status-row">
+            <span id="assignedText">— asignadas</span>
+            <span id="totalText">— totales</span>
+          </div>
+          <div class="status-divider"></div>
+          <div class="status-session">
+            <div class="session-icon">↻</div>
+            <div>
+              <div class="session-title">Ronda <strong id="roundNumber">—</strong></div>
+              <div class="session-text" id="statusDescription">Las asignaciones se guardan en este teléfono.</div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="main-grid">
+        <div class="card draw-card">
+          <div class="card-topline">
+            <span class="section-label">TU ASIGNACIÓN</span>
+            <span class="tiny-stars" aria-hidden="true">✦ ✧</span>
+          </div>
+
+          <div id="entryStage">
+            <div class="intro-illustration" aria-hidden="true">
+              <svg viewBox="0 0 260 170" fill="none">
+                <ellipse cx="130" cy="145" rx="76" ry="10" fill="#D2DCF2"></ellipse>
+                <rect x="58" y="45" width="78" height="84" rx="18" fill="#EEF3FA"></rect>
+                <rect x="72" y="63" width="49" height="8" rx="4" fill="#B7C8EA"></rect>
+                <rect x="72" y="79" width="33" height="8" rx="4" fill="#D3DDF0"></rect>
+                <circle cx="98" cy="106" r="13" fill="#D6E0F4"></circle>
+                <rect x="125" y="28" width="78" height="95" rx="18" fill="#5B7CB2"></rect>
+                <rect x="141" y="48" width="46" height="8" rx="4" fill="#B9C7E0"></rect>
+                <rect x="141" y="64" width="34" height="8" rx="4" fill="#B9C7E0"></rect>
+                <circle cx="164" cy="95" r="15" fill="#fff"></circle>
+                <path d="M157 95l5 5 10-11" stroke="#5B7CB2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+
+            <div class="draw-action">
+              <button id="drawButton" class="primary-button draw-big-button" type="button" disabled>
+                <span id="drawButtonText">¡Descubre tu tarea!</span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </button>
+              <p class="helper draw-hint">Un toque, una tarea. No hace falta introducir ningún nombre.</p>
+            </div>
+            <div id="drawNotice" class="notice" role="status" aria-live="polite"></div>
+          </div>
+
+          <div id="resultStage" class="result-stage" hidden>
+            <div class="result-badge">TAREA ASIGNADA</div>
+            <div id="resultVisual" class="task-visual" aria-hidden="true"></div>
+            <h2 id="resultTask"></h2>
+            <p id="resultDescription" class="task-description"></p>
+            <p id="resultMessage" class="result-message"></p>
+            <div class="result-tag"><span>✓</span> Tarea retirada del sorteo</div>
+            <button id="nextPerson" class="next-button" type="button">Siguiente persona <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+
+        <div class="card info-card">
+          <div class="card-topline">
+            <span class="section-label">CÓMO FUNCIONA</span>
+          </div>
+          <div class="steps">
+            <div class="step-item"><b>1</b><span>Pulsa el botón grande</span></div>
+            <div class="step-item"><b>2</b><span>Mira la imagen y lee tu tarea</span></div>
+            <div class="step-item"><b>3</b><span>Pasa el teléfono a otra persona</span></div>
+          </div>
+
+          <div class="mini-note">
+            <strong>Importante:</strong>
+            Si ya no quedan tareas disponibles, el botón se desactiva automáticamente.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">Las asignaciones se guardan únicamente en este navegador. No borres sus datos hasta terminar.</footer>
+  </div>
+
+  <div id="adminOverlay" class="overlay" hidden>
+    <section class="admin-panel" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+      <div class="admin-head">
+        <div>
+          <div class="admin-eyebrow">ÁREA DEL ORGANIZADOR</div>
+          <h2 id="adminTitle">Gestión de tareas</h2>
+        </div>
+        <button id="closeAdmin" class="close-button" type="button" aria-label="Cerrar">×</button>
+      </div>
+
+      <div id="adminDashboard">
+        <p class="admin-description">Una tarea por línea. Si guardas una nueva lista, se borrarán las asignaciones actuales.</p>
+        <label class="field-label" for="tasksInput">Lista de tareas</label>
+        <textarea id="tasksInput" rows="10" spellcheck="false"></textarea>
+
+        <div class="tools-row">
+          <span id="taskCount" class="helper"></span>
+          <button id="saveTasks" type="button" class="secondary-button accent">Guardar tareas</button>
+        </div>
+
+        <div class="admin-divider"></div>
+
+        <div class="tools-row tools-row-spaced">
+          <div>
+            <b>Asignaciones realizadas</b>
+            <p class="helper small" id="adminCount">0 tareas asignadas</p>
+          </div>
+          <button id="resetAll" class="secondary-button danger" type="button">↻ Reset</button>
+        </div>
+
+        <div id="assignmentsList" class="assignments-list">
+          <p class="empty-admin">Todavía no se ha asignado ninguna tarea.</p>
+        </div>
+
+        <button id="logoutAdmin" class="logout-button" type="button">Volver a la extracción</button>
+      </div>
+
+      <div id="adminNotice" class="admin-notice" role="status" aria-live="polite"></div>
+    </section>
+  </div>
+<script>
+const $ = (id) => document.getElementById(id);
+const STORAGE_KEY = 'salon-del-reino:limpieza:local:v1';
+const DEFAULT_TASKS = [
+  'Aspirar el podio',
+  'Escoba atrapapolvo · 1',
+  'Escoba atrapapolvo · 2',
+  'Baño de hombres',
+  'Baño de mujeres',
+  'Cubo de agua y fregona para la sala (solo manchas)',
+  'Cubo y fregona para los baños',
+  'Cambio de bolsas de basura'
+];
+
+const TASK_INFO = {
+  'Aspirar el podio': {
+    title: 'Aspirar el podio',
+    description: 'Limpia cuidadosamente la zona del podio con la aspiradora.',
+    visual: vacuumVisual()
+  },
+  'Escoba atrapapolvo · 1': {
+    title: 'Escoba atrapapolvo',
+    description: 'Pasa la escoba atrapapolvo por las zonas asignadas de la sala.',
+    visual: broomVisual('1')
+  },
+  'Escoba atrapapolvo · 2': {
+    title: 'Escoba atrapapolvo',
+    description: 'Pasa la escoba atrapapolvo por las zonas asignadas de la sala.',
+    visual: broomVisual('2')
+  },
+  'Baño de hombres': {
+    title: 'Baño de hombres',
+    description: 'Usa productos azul y rojo con paños distintos. Verifica también que haya jabón y papel.',
+    visual: restroomVisual('men')
+  },
+  'Baño de mujeres': {
+    title: 'Baño de mujeres',
+    description: 'Usa productos azul y rojo con paños distintos. Verifica también que haya jabón y papel.',
+    visual: restroomVisual('women')
+  },
+  'Cubo de agua y fregona para la sala (solo manchas)': {
+    title: 'Fregona para la sala',
+    description: 'Utiliza el cubo con agua y la fregona solamente para quitar manchas en la sala.',
+    visual: mopVisual('sala')
+  },
+  'Cubo y fregona para los baños': {
+    title: 'Fregona para los baños',
+    description: 'Encárgate del cubo y la fregona para la limpieza de los baños.',
+    visual: mopVisual('baños')
+  },
+  'Cambio de bolsas de basura': {
+    title: 'Bolsas de basura',
+    description: 'Cambia las bolsas de basura de los cubos correspondientes.',
+    visual: trashVisual()
+  }
+};
+
+
+function newRound() {
+  return { round: 1, tasks: [...DEFAULT_TASKS], assignments: [], last: null };
+}
+
+function validStore(data) {
+  return Boolean(data && Number.isSafeInteger(data.round) && data.round >= 1 &&
+    Array.isArray(data.tasks) && data.tasks.length >= 1 && data.tasks.length <= 100 &&
+    data.tasks.every(t => typeof t === 'string' && t.length > 0) &&
+    new Set(data.tasks).size === data.tasks.length &&
+    Array.isArray(data.assignments) && data.assignments.length <= data.tasks.length &&
+    data.assignments.every(a => a && typeof a.task === 'string' && data.tasks.includes(a.task)) &&
+    new Set(data.assignments.map(a => a.task)).size === data.assignments.length &&
+    (!data.last || (typeof data.last.task === 'string' &&
+      data.assignments.some(a => a.task === data.last.task))));
+}
+
+// Compatibilidad con la versión anterior: conserva las tareas y borra los nombres guardados.
+function stripNames(data) {
+  return {
+    round: data.round,
+    tasks: data.tasks,
+    assignments: data.assignments.map(a => ({ task: a.task })),
+    last: data.last ? { task: data.last.task } : null
+  };
+}
+
+let storageError = '';
+let store;
+try {
+  const data = localStorage.getItem(STORAGE_KEY);
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (!validStore(parsed)) throw new Error('Datos guardados inválidos.');
+    store = stripNames(parsed);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  } else {
+    store = newRound();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  }
+} catch (error) {
+  store = newRound();
+  storageError = 'No se puede leer o guardar en este navegador. Comprueba que no estés en modo privado y que el almacenamiento esté permitido.';
+}
+
+function persist(next) {
+  if (storageError) throw new Error(storageError);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    storageError = 'No se han podido guardar las asignaciones. Comprueba el almacenamiento del navegador.';
+    throw new Error(storageError);
+  }
+  store = next;
+}
+
+function notice(text = '') {
+  $('drawNotice').textContent = text;
+}
+
+function adminNotice(text = '', success = false) {
+  $('adminNotice').textContent = text;
+  $('adminNotice').classList.toggle('success', success);
+}
+
+function taskInfo(label) {
+  return TASK_INFO[label] || {
+    title: label,
+    description: 'Esta tarea ha sido asignada correctamente.',
+    visual: genericVisual()
+  };
+}
+
+function renderResult(assignment) {
+  const info = taskInfo(assignment.task);
+  $('entryStage').hidden = true;
+  $('resultStage').hidden = false;
+  $('resultVisual').innerHTML = info.visual;
+  $('resultTask').textContent = info.title;
+  $('resultDescription').textContent = info.description;
+  $('resultMessage').textContent = '¡Gracias por colaborar en la limpieza del Salón del Reino!';
+}
+
+function render() {
+  const total = store.tasks.length;
+  const assigned = store.assignments.length;
+  const remaining = total - assigned;
+  $('remainingCount').textContent = remaining;
+  $('assignedText').textContent = `${assigned} asignada${assigned === 1 ? '' : 's'}`;
+  $('totalText').textContent = `${total} total${total === 1 ? '' : 'es'}`;
+  $('roundNumber').textContent = store.round;
+  const pct = total ? Math.round(assigned / total * 100) : 100;
+  $('progressFill').style.width = `${pct}%`;
+  $('progressBar').setAttribute('aria-valuenow', String(pct));
+  $('connectionStatus').className = `status-indicator ${storageError ? 'offline' : 'online'}`;
+  $('connectionStatus').title = storageError ? 'Error de almacenamiento' : 'Datos guardados en este dispositivo';
+  $('statusDescription').textContent = storageError ? 'No se pueden guardar las asignaciones.' :
+    remaining === 0 ? 'Todas las tareas ya están asignadas.' : 'Guardado en este navegador.';
+  $('drawButton').disabled = Boolean(storageError || remaining === 0 || store.last);
+  $('drawButtonText').textContent = remaining === 0 ? 'Tareas terminadas' : '¡Descubre tu tarea!';
+  $('nextPerson').innerHTML = remaining === 0 ? 'Finalizar <span aria-hidden="true">✓</span>' : 'Siguiente persona <span aria-hidden="true">→</span>';
+  if (store.last && store.assignments.some(a => a.task === store.last.task)) {
+    renderResult(store.last);
+  } else {
+    $('resultStage').hidden = true;
+    $('entryStage').hidden = false;
+    if (remaining === 0) notice('Todas las tareas ya han sido asignadas.');
+  }
+  if (storageError) notice(storageError);
+}
+
+function renderAdmin() {
+  $('tasksInput').value = store.tasks.join('\n');
+  $('taskCount').textContent = `${store.tasks.length} tareas configuradas`;
+  $('adminCount').textContent = `${store.assignments.length} tarea${store.assignments.length === 1 ? '' : 's'} asignada${store.assignments.length === 1 ? '' : 's'}`;
+  const list = $('assignmentsList');
+  list.replaceChildren();
+  if (store.assignments.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'empty-admin';
+    p.textContent = 'Todavía no se ha asignado ninguna tarea.';
+    list.append(p);
+  } else {
+    store.assignments.forEach((a, index) => {
+      const row = document.createElement('div');
+      row.className = 'assignment-row';
+      const indexLabel = document.createElement('span');
+      const task = document.createElement('span');
+      indexLabel.textContent = `Extracción ${index + 1}`;
+      task.textContent = a.task;
+      row.append(indexLabel, task);
+      list.append(row);
+    });
+  }
+}
+
+function refreshAdminStats() {
+  const listValue = $('tasksInput').value;
+  renderAdmin();
+  $('tasksInput').value = listValue;
+}
+
+$('drawButton').addEventListener('click', () => {
+  if (storageError || store.last || store.assignments.length === store.tasks.length) return;
+  const assignedTasks = new Set(store.assignments.map(a => a.task));
+  const available = store.tasks.filter(t => !assignedTasks.has(t));
+  if (!available.length) return render();
+  const randomValue = new Uint32Array(1);
+  if (globalThis.crypto && crypto.getRandomValues) crypto.getRandomValues(randomValue);
+  else randomValue[0] = Math.floor(Math.random() * 2**32);
+  const task = available[randomValue[0] % available.length];
+  const assignment = { task };
+  try {
+    persist({ ...store, assignments: [...store.assignments, assignment], last: assignment });
+    notice('');
+    render();
+  } catch (e) { notice(e.message); render(); }
+});
+
+$('nextPerson').addEventListener('click', () => {
+  try {
+    persist({ ...store, last: null });
+    notice('');
+    render();
+  } catch (e) { notice(e.message); }
+});
+
+$('openAdmin').addEventListener('click', () => {
+  $('adminOverlay').hidden = false;
+  adminNotice('');
+  renderAdmin();
+});
+
+function closeAdmin() { $('adminOverlay').hidden = true; }
+$('closeAdmin').addEventListener('click', closeAdmin);
+$('logoutAdmin').addEventListener('click', closeAdmin);
+$('adminOverlay').addEventListener('click', (e) => {
+  if (e.target === $('adminOverlay')) closeAdmin();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAdmin();
+});
+
+$('resetAll').addEventListener('click', () => {
+  if (!confirm('¿Reiniciar todas las asignaciones? Todas las tareas volverán a estar disponibles.')) return;
+  try {
+    persist({ ...store, assignments: [], last: null, round: store.round + 1 });
+    notice('');
+    render();
+    renderAdmin();
+    adminNotice('Reset completado. Todas las tareas vuelven a estar disponibles.', true);
+  } catch (e) { adminNotice(e.message); }
+});
+
+$('saveTasks').addEventListener('click', () => {
+  const tasks = $('tasksInput').value.split(/\r?\n/).map(t => t.trim().replace(/\s+/g, ' ')).filter(Boolean);
+  if (!tasks.length || tasks.length > 100) return adminNotice('Introduce entre 1 y 100 tareas.');
+  if (tasks.some(t => t.length > 120)) return adminNotice('Cada tarea debe tener como máximo 120 caracteres.');
+  if (new Set(tasks.map(t => t.toLocaleLowerCase('es-ES'))).size !== tasks.length) {
+    return adminNotice('Para repetir un puesto, añade un número diferente al final de cada línea.');
+  }
+  if (!confirm(`¿Guardar ${tasks.length} tareas? Se borrarán las asignaciones actuales.`)) return;
+  try {
+    persist({ round: store.round + 1, tasks, assignments: [], last: null });
+    notice('');
+    render();
+    renderAdmin();
+    adminNotice('Lista actualizada. Ha comenzado una nueva ronda.', true);
+  } catch (e) { adminNotice(e.message); }
+});
+
+window.addEventListener('storage', (e) => {
+  if (e.key !== STORAGE_KEY || !e.newValue) return;
+  try {
+    const incoming = JSON.parse(e.newValue);
+    if (!validStore(incoming)) return;
+    store = incoming;
+    render();
+    if (!$('adminOverlay').hidden) refreshAdminStats();
+  } catch { /* Keep visible data intact. */ }
+});
+
+render();
+
+function genericVisual() {
+  return `
+  <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="54" y="28" width="152" height="112" rx="26" fill="#DFEAF8"/>
+    <rect x="82" y="56" width="96" height="12" rx="6" fill="#A0B7D9"/>
+    <rect x="82" y="79" width="68" height="12" rx="6" fill="#C2D2E8"/>
+    <circle cx="130" cy="110" r="24" fill="#5B7CB2" opacity=".16"/>
+    <path d="M120 110l8 8 14-16" stroke="#5B7CB2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function vacuumVisual() {
+  return `
+  <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="130" cy="150" rx="86" ry="10" fill="#DCE7F5"/>
+    <rect x="92" y="55" width="38" height="58" rx="12" fill="#5B7CB2"/>
+    <rect x="101" y="66" width="20" height="15" rx="6" fill="#D7E5F6"/>
+    <path d="M129 65c26-24 43-36 63-36" stroke="#91A9CB" stroke-width="6" stroke-linecap="round"/>
+    <path d="M191 31v29" stroke="#91A9CB" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="103" cy="117" r="8" fill="#334A6A"/>
+    <circle cx="120" cy="117" r="8" fill="#334A6A"/>
+    <path d="M129 100h27c10 0 18 8 18 18v5" stroke="#334A6A" stroke-width="6" stroke-linecap="round"/>
+    <rect x="171" y="120" width="34" height="9" rx="4.5" fill="#5B7CB2"/>
+    <rect x="201" y="118" width="13" height="13" rx="4" fill="#89A7CF"/>
+    <path d="M47 132h44" stroke="#A1B8D9" stroke-width="6" stroke-linecap="round"/>
+    <path d="M49 127l-9 12" stroke="#A1B8D9" stroke-width="5" stroke-linecap="round"/>
+    <path d="M89 127l9 12" stroke="#A1B8D9" stroke-width="5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function broomVisual(number) {
+  return `
+  <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="130" cy="150" rx="88" ry="10" fill="#DCE7F5"/>
+    <path d="M154 36L116 120" stroke="#8EA8CD" stroke-width="10" stroke-linecap="round"/>
+    <rect x="88" y="112" width="82" height="18" rx="9" fill="#5B7CB2"/>
+    <path d="M96 130h66" stroke="#AFC3E1" stroke-width="5" stroke-linecap="round"/>
+    <path d="M100 137v10M115 137v10M130 137v10M145 137v10M160 137v10" stroke="#91A9CB" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="204" cy="48" r="22" fill="#E7F0FB"/>
+    <text x="204" y="55" text-anchor="middle" font-size="22" font-weight="700" fill="#5B7CB2" font-family="Inter, Arial, sans-serif">${number}</text>
+  </svg>`;
+}
+
+function restroomVisual(kind) {
+  const accent = kind === 'men' ? '#6FA8DC' : '#D78AAF';
+  const product = kind === 'men' ? 'H' : 'M';
+  return `
+  <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="130" cy="151" rx="88" ry="10" fill="#DCE7F5"/>
+    <rect x="48" y="32" width="84" height="108" rx="20" fill="#EFF5FC"/>
+    <rect x="62" y="49" width="56" height="64" rx="12" fill="#FFFFFF" stroke="#D4E1F0"/>
+    <circle cx="90" cy="63" r="10" fill="${accent}" opacity=".2"/>
+    <path d="M90 76v20M80 90h20M84 96l-6 14M96 96l6 14" stroke="${accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="149" y="44" width="24" height="66" rx="8" fill="#6FA8DC"/>
+    <rect x="181" y="44" width="24" height="66" rx="8" fill="#D86E6E"/>
+    <rect x="154" y="60" width="14" height="18" rx="5" fill="#FFFFFF" opacity=".85"/>
+    <rect x="186" y="60" width="14" height="18" rx="5" fill="#FFFFFF" opacity=".85"/>
+    <text x="161" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" font-family="Inter, Arial, sans-serif">A</text>
+    <text x="193" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" font-family="Inter, Arial, sans-serif">R</text>
+    <rect x="148" y="118" width="58" height="14" rx="7" fill="#C8D8EC"/>
+    <rect x="212" y="66" width="16" height="46" rx="8" fill="#F7FAFD" stroke="#D5E1EF"/>
+    <rect x="214" y="76" width="12" height="10" rx="5" fill="#D8E6F6"/>
+    <path d="M216 95h8" stroke="#AFC4E1" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="220" cy="56" r="10" fill="#EEF4FB"/>
+    <text x="220" y="60" text-anchor="middle" font-size="10" font-weight="700" fill="#6B829E" font-family="Inter, Arial, sans-serif">${product}</text>
+  </svg>`;
+}
+
+function mopVisual(scope) {
+  const label = scope === 'sala' ? 'S' : 'B';
+  return `
+  <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="130" cy="150" rx="88" ry="10" fill="#DCE7F5"/>
+    <rect x="64" y="66" width="52" height="58" rx="12" fill="#5B7CB2"/>
+    <path d="M74 66c2-15 10-23 16-23h1c6 0 14 8 16 23" stroke="#8DA7CB" stroke-width="6" stroke-linecap="round"/>
+    <rect x="74" y="79" width="32" height="10" rx="5" fill="#C6D7EC"/>
+    <path d="M159 34v84" stroke="#8EA8CD" stroke-width="8" stroke-linecap="round"/>
+    <rect x="131" y="112" width="56" height="12" rx="6" fill="#89A7CF"/>
+    <path d="M137 124c13 9 31 9 44 0" stroke="#BFD1E8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M142 132l-5 12M154 134l-4 11M166 134l-3 11M178 132l-2 12" stroke="#94ABCF" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="204" cy="53" r="20" fill="#EEF5FD"/>
+    <text x="204" y="59" text-anchor="middle" font-size="20" font-weight="800" fill="#5B7CB2" font-family="Inter, Arial, sans-serif">${label}</text>
+  </svg>`;
+}
+
+function trashVisual() {
+  return `
+  <svg viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="130" cy="150" rx="88" ry="10" fill="#DCE7F5"/>
+    <path d="M92 52h76" stroke="#7D98BF" stroke-width="8" stroke-linecap="round"/>
+    <path d="M107 52c0-9 7-16 16-16h14c9 0 16 7 16 16" stroke="#A0B7D8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M99 65l8 60c1 8 8 14 16 14h14c8 0 15-6 16-14l8-60" fill="#5B7CB2"/>
+    <path d="M116 80v39M130 80v39M144 80v39" stroke="#D9E6F6" stroke-width="5" stroke-linecap="round"/>
+    <path d="M193 91c0-10 8-18 18-18 4 0 9 2 12 5 2 3 4 7 4 11 0 8-4 13-8 19-3 5-7 10-7 18 0 3-2 5-5 5h-28c-3 0-5-2-5-5 0-8-4-13-7-18-4-6-8-11-8-19 0-4 2-8 4-11 3-3 8-5 12-5 10 0 18 8 18 18Z" fill="#E9F1FB"/>
+    <path d="M193 91c0 12-7 24-14 35h28c-7-11-14-23-14-35Z" fill="#C6D7EC"/>
+  </svg>`;
+}
+
+</script>
+</body>
+</html>
